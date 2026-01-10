@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Payment = () => {
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
@@ -9,18 +9,22 @@ const Payment = () => {
   if (!data) return <p>No payment data</p>;
 
 
-const addonsTotal = data.addons.reduce((s, a) => s + Number(a.price), 0);
-const discount = Number(data.coupon?.discount || 0);
-const total = Number(data.plan.price) + addonsTotal - discount;
+  const addonsTotal = data.addons.reduce((s, a) => s + Number(a.price), 0);
+  const discount = Number(data.coupon?.discount || 0);
+  const total = Number(data.plan.price) + addonsTotal - discount;
 
   const handlePayment = async () => {
     try {
       // 1️⃣ Create order
+      // const orderRes = await axios.post(
+      //   "http://localhost:5000/api/payments/orders",
+      //   { amount: total }
+      // );
+
       const orderRes = await axios.post(
-        "http://localhost:5000/api/payments/orders",
+        `${API_BASE}/api/payments/orders`,
         { amount: total }
       );
-
       const { order_id, amount } = orderRes.data;
 
       // 2️⃣ Razorpay options
@@ -35,7 +39,7 @@ const total = Number(data.plan.price) + addonsTotal - discount;
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              "http://localhost:5000/api/payments/verify",
+              `${API_BASE}/api/payments/verify`,
               {
                 payment_id: response.razorpay_payment_id,
                 order_id: response.razorpay_order_id,
@@ -52,12 +56,13 @@ const total = Number(data.plan.price) + addonsTotal - discount;
                 },
               }
             );
-            
+
+
 
             // if (verifyRes.data.success) {
             //   navigate("/payment-success");
             // }
-              window.location.href = "/payment-success";
+            window.location.href = "/payment-success";
           } catch (err) {
             alert("Payment done but verification failed");
           }
