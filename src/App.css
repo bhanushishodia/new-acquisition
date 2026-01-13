@@ -53,3 +53,32 @@
   margin-bottom: 10px;
   line-height: 1.6;
 }
+
+.pricing-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: #f4f7ff; /* bg color */
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.rupee-sign {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1a73e8; /* ₹ color */
+  line-height: 1;
+}
+
+.pricing-content h1 {
+  margin: 0 0 8px;
+  text-align: left;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.pricing-content p {
+  margin: 0;
+  text-align: left;
+  color: #555;
+}

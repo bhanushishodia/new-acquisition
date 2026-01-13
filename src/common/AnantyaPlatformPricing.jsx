@@ -3,18 +3,18 @@ import { useNavigate } from "react-router-dom";
 
 const AnantyaPlatformPricing = () => {
   const navigate = useNavigate();
-  const [billingType, setBillingType] = useState("monthly");
+  const [billingType, setBillingType] = useState("quarterly");
 
   const pricingPlans = {
-    monthly: [
+    quarterly: [
       {
         name: "Neo",
-        price: 1,
+        price: 4999,
         features: ["Unlimited Service Conversations", "Ultimate Templates Approval &Sessions", "Campaign Messaging", "Welcome & Away Messages", "Quick Replies", "Basic & Carousel Message Formats", "Unlimited Smart Labeling", "+ Any 5 Customizable Add-ons"],
       },
       {
         name: "Neo Pro",
-        price: 24999,
+        price: 11499,
         popular: true,
         features: ["All core features of Anantya Neo+", "Social Media Integrations (Facebook, Instagram)", "Lead Management System", "Priority Support", "Keyword Alert", "+ All customizable add-ons"],
       },
@@ -27,17 +27,16 @@ const AnantyaPlatformPricing = () => {
     yearly: [
       {
         name: "Neo",
-        price: 9999,
+        price: 10999,
         features: ["Unlimited Service Conversations", "Ultimate Templates Approval &Sessions", "Campaign Messaging", "Welcome & Away Messages", "Quick Replies", "Basic & Carousel Message Formats", "Unlimited Smart Labeling", "+ Any 5 Customizable Add-ons"],
       },
       {
         name: "Neo Pro",
-        price: 19999,
+        price: 24999,
         features: ["All core features of Anantya Neo +", "Social Media Integrations (Facebook, Instagram)", "Lead Management System", "Priority Support", "Keyword Alert", "+ All customizable add-ons"],
       },
       {
         name: "Neo Elite",
-        price: 37999,
         popular: true,
         custom: true,
         features: ["All features of Anantya Neo Pro", "Industry-Specific WhatsApp Account Setup", "RCS - SMS Fallback Setup", "2 Basic Industry-Specific Integrations (CRM, ERP, or HR tools depending on industry)", "Advance Chatbot", "Dedicated Account Manager & Consultation", "Retrospective Smart Agent Routing", "OTP Generation System", "Custom Message Pricing"],
@@ -45,38 +44,53 @@ const AnantyaPlatformPricing = () => {
     ],
   };
 
-const handleBuyNow = (plan) => {
-  if (plan.custom) {
-    window.open("https://wa.link/0wphve", "_blank");
-    return;
-  }
+  const handleBuyNow = (plan) => {
+    if (plan.custom) {
+      window.open("https://wa.link/0wphve", "_blank");
+      return;
+    }
 
-  const payload = {
-    plan: {
-      name: plan.name,
-      billing: billingType,
-      price: plan.price,
-    },
-    addons: [],
-    coupon: null,
+    const payload = {
+      plan: {
+        name: plan.name,
+        billing: billingType,
+        price: plan.price,
+      },
+      setupFee: 2999,          // ✅ FIXED
+      addons: [],              // paid addons later
+      addonsTotal: 0,
+      coupon: null,
+    };
+
+    localStorage.setItem("purchaseData", JSON.stringify(payload));
+    navigate("/add-ons");
   };
 
-  localStorage.setItem("purchaseData", JSON.stringify(payload));
-  navigate("/add-ons");
-};
 
 
   return (
     <div className="container py-5">
+      <div className="pricing-box mb-4">
+        <div className="rupee-sign">₹</div>
+
+        <div className="pricing-content ms-3">
+          <h1>One-time setup fee @ INR 2,999</h1>
+          <p>
+            To get started with the WhatsApp Business API, there is a one-time setup fee
+            of INR 2,999, which covers initial onboarding, FBM verification, and
+            configuration of your WhatsApp Business account.
+          </p>
+        </div>
+      </div>
       <h2 className="text-center mb-4">Anantya Pricing</h2>
 
       <div className="text-center mb-4">
         <label className="me-3">
           <input
             type="radio"
-            checked={billingType === "monthly"}
-            onChange={() => setBillingType("monthly")}
-          /> Monthly
+            checked={billingType === "quarterly"}
+            onChange={() => setBillingType("quarterly")}
+          /> Quarterly
         </label>
         <label>
           <input

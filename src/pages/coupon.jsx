@@ -4,37 +4,71 @@ import { useNavigate } from "react-router-dom";
 const COUPONS = {
   NEWYEAR10: { type: "percent", value: 10 },
   FLAT2000: { type: "flat", value: 2000 },
+  NOSETUP: { type: "nosetup" }, // 👈 new offer
 };
 
 const Coupon = () => {
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
-  const [code, setCode] = useState("");
-  const [discount, setDiscount] = useState(0);
 
-  const total =
-    data.plan.price +
-    data.addons.reduce((sum, a) => sum + a.price, 0);
+
+
+  if (!data) return <p>No purchase data found</p>;
+  const [code, setCode] = useState("");   // ✅ MISSING STATE
+
+  const [discount, setDiscount] = useState(0);
+  const [setupFeeWaived, setSetupFeeWaived] = useState(false);
+
+  const basePrice = data.plan.price;
+  const addonsTotal = data.addonsTotal || 0;
+  const setupFee = data.setupFee || 0;
+
+  const totalBeforeDiscount = basePrice + addonsTotal + setupFee;
+  const effectiveSetupFee = setupFeeWaived ? 0 : setupFee;
+
+  const totalAfterDiscount =
+    basePrice + addonsTotal + effectiveSetupFee - discount;
+
+
+
 
   const applyCoupon = () => {
-    const c = COUPONS[code];
+    const c = COUPONS[code.toUpperCase()];
     if (!c) return alert("Invalid coupon");
 
-    const d =
-      c.type === "percent"
-        ? Math.round((total * c.value) / 100)
-        : c.value;
+    let discountAmount = 0;
+    let waived = false;
 
-    setDiscount(d);
+    if (c.type === "percent") {
+      discountAmount = Math.round((basePrice * c.value) / 100);
+    }
+
+    if (c.type === "flat") {
+      discountAmount = Math.min(c.value, basePrice);
+    }
+
+    if (c.type === "nosetup") {
+      waived = true;
+    }
 
     localStorage.setItem(
       "purchaseData",
       JSON.stringify({
         ...data,
-        coupon: { code, discount: d },
+        coupon: {
+          code: code.toUpperCase(),
+          discount: discountAmount,
+          setupFeeWaived: waived,
+        },
       })
     );
+
+    setDiscount(discountAmount);
+    setSetupFeeWaived(waived);
   };
+
+
+
 
   return (
     <div className="container py-5">
@@ -43,18 +77,39 @@ const Coupon = () => {
       <input
         className="form-control mb-2"
         placeholder="Enter coupon code"
+        value={code}
         onChange={(e) => setCode(e.target.value)}
       />
 
-      <button className="btn btn-secondary" onClick={applyCoupon}>
+      <button className="btn btn-secondary mb-3" onClick={applyCoupon}>
         Apply
       </button>
 
-      <p className="mt-3">Total: ₹{total}</p>
-      <p>Discount: ₹{discount}</p>
-      <p><strong>Payable: ₹{total - discount}</strong></p>
+      <div className="card p-3 shadow-sm">
+        <p>Base Plan: ₹{basePrice}</p>
+        <p>Add-ons: ₹{addonsTotal}</p>
 
-      <button className="btn btn-primary" onClick={() => navigate("/get-started")}>
+        <p>
+          Setup Fee: ₹
+          {setupFeeWaived ? (
+            <span className="text-success text-decoration-line-through">
+              {setupFee} (Waived)
+            </span>
+          ) : (
+            setupFee
+          )}
+        </p>
+
+        <p>Discount: ₹{discount}</p>
+        <hr />
+        <h5>Total Payable: ₹{totalAfterDiscount}</h5>
+
+      </div>
+
+      <button
+        className="btn btn-primary mt-3"
+        onClick={() => navigate("/get-started")}
+      >
         Continue
       </button>
     </div>
