@@ -138,6 +138,7 @@ const AffiliateTerms = () => {
                                     info@anantya.ai
                                 </a>
                             </p>
+                            <small>Version 1.0</small>
 
                         </div>
                     </div>

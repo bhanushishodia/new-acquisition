@@ -1,7 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import usePurchaseGuard from "../hooks/usePurchaseGuard";
 
 const OrderSummary = () => {
+    usePurchaseGuard();
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
 
@@ -9,18 +11,14 @@ const OrderSummary = () => {
     return <p className="text-center mt-5">No order data found</p>;
   }
 
-const basePrice = data.plan.price;
-const addonsTotal = data.addonsTotal || 0;
-const setupFee = data.coupon?.setupFeeWaived ? 0 : data.setupFee;
-const discount = data.coupon?.discount || 0;
+  const basePrice = data.plan.price;
+  const addonsTotal = data.addonsTotal || 0;
+  const setupFee = data.coupon?.setupFeeWaived ? 0 : data.setupFee;
+  const discount = data.coupon?.discount || 0;
 
-const total = basePrice + addonsTotal + setupFee - discount;
-
-
-
-
+  const total = basePrice + addonsTotal + setupFee - discount;
   return (
-    <div className="container py-5">
+    <div className="container pb-5">
       <h2>Order Summary</h2>
 
       <h5>Plan</h5>
@@ -57,7 +55,7 @@ const total = basePrice + addonsTotal + setupFee - discount;
       <h4>Total Payable: ₹{total}</h4>
 
 
-      <button className="btn btn-success" onClick={() => navigate("/payment")}>
+      <button className="btn btn-success mt-3" onClick={() => navigate("/payment")}>
         Proceed to Payment
       </button>
     </div>

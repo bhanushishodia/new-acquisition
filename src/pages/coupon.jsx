@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const COUPONS = {
@@ -11,6 +11,13 @@ const Coupon = () => {
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
 
+useEffect(() => {
+  if (data?.coupon) {
+    setCode(data.coupon.code || "");
+    setDiscount(data.coupon.discount || 0);
+    setSetupFeeWaived(!!data.coupon.setupFeeWaived);
+  }
+}, []);
 
 
   if (!data) return <p>No purchase data found</p>;
@@ -71,8 +78,8 @@ const Coupon = () => {
 
 
   return (
-    <div className="container py-5">
-      <h2>Apply Coupon</h2>
+    <div className="container pb-5">
+      <h2 className="mb-3">Apply Coupon</h2>
 
       <input
         className="form-control mb-2"

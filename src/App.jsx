@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/bootstrap.css";
 
 import WhatsAppPricing from "./pages/whatsapp-pricing";
 import AddOns from "./pages/add-ons";
@@ -9,6 +11,7 @@ import Payment from "./pages/payment";
 import PaymentPending from "./pages/payment-pending";
 import PaymentSuccess from "./pages/payment-success";
 import PaymentVerify from "./pages/payment-verify";
+import TermsAndConditions from "./pages/terms-conditions";
 
 const App = () => {
   return (
@@ -22,7 +25,7 @@ const App = () => {
       <Route path="/payment-pending" element={<PaymentPending />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="/payment-verify" element={<PaymentVerify />} />
-
+      <Route path="/terms-conditions" element={<TermsAndConditions />} />
     </Routes>
   );
 };

@@ -93,15 +93,17 @@ const AddOns = () => {
           price: a.monthly || a.yearly || a.oneTime || 0,
         })),
         addonsTotal: paidTotal,
+        freeAddons: freeSelected,
       })
     );
+    
 
     navigate("/coupon");
   };
 
 
   return (
-    <div className="container py-5">
+    <div className="container pb-5">
       <h2 className="mb-3">Customizable Add-Ons</h2>
       <p className="text-muted mb-4">
         To make Anantya work perfectly for your business needs

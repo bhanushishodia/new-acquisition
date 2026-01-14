@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/bootstrap.css";
+
 
 const GetStartedForm = () => {
   const navigate = useNavigate();
@@ -12,7 +15,6 @@ const GetStartedForm = () => {
   const [formData, setFormData] = useState({
     legalName: "",
     businessEmail: "",
-    mobile: "",
     company: "",
     website: "",
     purpose: "",
@@ -24,6 +26,10 @@ const GetStartedForm = () => {
 
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [showAgreement, setShowAgreement] = useState(false);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -52,15 +58,16 @@ const GetStartedForm = () => {
     if (
       !formData.legalName ||
       !formData.businessEmail ||
-      !formData.mobile ||
+
       !formData.company ||
       !formData.website ||
       !formData.purpose
     ) {
       return setError("Please fill all required fields.");
     }
-    if (formData.mobile.length !== 10) {
-      return setError("Please enter a valid 10-digit mobile number.");
+
+    if (!phone || phone.length < 8) {
+      return setError("Please enter a valid mobile number.");
     }
 
 
@@ -78,23 +85,27 @@ const GetStartedForm = () => {
       return setError("Please upload company legal documents.");
     }
 
-    if (!accepted) {
-      return setError("Please accept the Terms & Conditions.");
-    }
+
 
     localStorage.setItem(
       "purchaseData",
       JSON.stringify({
         ...data,
-        user: formData,
+        user: {
+          ...formData,
+          mobile: `+${phone}`,
+          country,
+        },
       })
     );
 
-    navigate("/order-summary");
+
+
+    navigate("/terms-conditions");
   };
 
   return (
-    <div className="container py-5">
+    <div className="container pb-5">
       <h2>Company Verification Details</h2>
 
       <p className="mb-4">
@@ -105,39 +116,55 @@ const GetStartedForm = () => {
 
       <form onSubmit={handleSubmit}>
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="legalName"
           placeholder="Full Legal Name"
           onChange={handleChange}
         />
 
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="businessEmail"
           placeholder="Business Email (company domain)"
           onChange={handleChange}
         />
 
-        <input
-          className="form-control mb-2"
-          name="mobile"
-          placeholder="Mobile Number"
-          value={formData.mobile}
-          maxLength={12}
-          inputMode="numeric"
-          onChange={handleChange}
-        />
+
+
+
+        <div className="mb-3">
+
+
+          <PhoneInput
+            country="in"
+            value={phone}
+            onChange={(value, countryData) => {
+              setPhone(value);
+              setCountry(countryData.countryCode);
+            }}
+            enableSearch
+            countryCodeEditable={false}
+            containerClass="w-100"
+            inputStyle={{
+              width: "100%",
+              height: "38px",
+            }}
+            buttonStyle={{
+              border: "1px solid #ced4da",
+            }}
+          />
+        </div>
 
 
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="company"
           placeholder="Company Name"
           onChange={handleChange}
         />
 
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="website"
           placeholder="Company Website (https://)"
           onChange={handleChange}
@@ -157,14 +184,14 @@ const GetStartedForm = () => {
         <h6>Business Registration (Any one required)</h6>
 
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="gst"
           placeholder="GST Number"
           onChange={handleChange}
         />
 
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           name="udyam"
           placeholder="Udyam Registration Number"
           onChange={handleChange}
@@ -178,7 +205,7 @@ const GetStartedForm = () => {
         />
 
         <div className="mb-3">
-          <label className="form-label">Upload Company Legal Documents</label>
+          <label className="form-label h6">Upload Company Legal Documents</label>
           <input
             type="file"
             className="form-control"
@@ -187,19 +214,6 @@ const GetStartedForm = () => {
             onChange={handleChange}
           />
         </div>
-
-        <div className="form-check mb-3">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            checked={accepted}
-            onChange={() => setAccepted(!accepted)}
-          />
-          <label className="form-check-label">
-            I agree to the Terms & Conditions
-          </label>
-        </div>
-
         <button className="btn btn-primary w-50">
           Continue to Order Summary
         </button>
