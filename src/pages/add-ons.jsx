@@ -39,14 +39,17 @@ const AddOns = () => {
   const [paidSelected, setPaidSelected] = useState([]);
   const [showFreeLimitMsg, setShowFreeLimitMsg] = useState(false);
 
-
   if (!data) return <p>Please select a plan first</p>;
+
+  // ✅ Move isNeoPro to component top level
+  const isNeoPro = data?.plan?.name === "Neo Pro";
 
   /* ===== FREE ADDONS (MAX 5 LOGIC) ===== */
   const toggleFreeAddon = (addon) => {
     const exists = freeSelected.find((a) => a.id === addon.id);
 
-    if (!exists && freeSelected.length >= 5) {
+    // Only enforce limit if NOT Neo Pro
+    if (!exists && !isNeoPro && freeSelected.length >= 5) {
       setShowFreeLimitMsg(true);
       return;
     }
@@ -57,6 +60,8 @@ const AddOns = () => {
       exists ? prev.filter((a) => a.id !== addon.id) : [...prev, addon]
     );
   };
+
+
 
 
   /* ===== PAID FEATURES ===== */
@@ -96,7 +101,7 @@ const AddOns = () => {
         freeAddons: freeSelected,
       })
     );
-    
+
 
     navigate("/coupon");
   };
@@ -111,7 +116,7 @@ const AddOns = () => {
 
       {/* ================= FREE ADDONS ================= */}
       <div className="card p-4 mb-5 shadow-sm">
-        <h5 className="mb-3">Free Add-ons (Select up to 5)</h5>
+        <h5 className="mb-3">Free Add-ons</h5>
         {/* LIMIT MESSAGE */}
         {showFreeLimitMsg && (
           <div className="alert alert-warning py-2 mb-3">
@@ -136,8 +141,11 @@ const AddOns = () => {
         </div>
 
         <small className="text-muted">
-          Selected: {freeSelected.length} / 5
+          Selected: {freeSelected.length}
+          {!isNeoPro ? " / 5" : ""} {/* Neo Pro shows unlimited */}
         </small>
+
+
       </div>
 
       {/* ================= PAID FEATURES ================= */}
