@@ -17,7 +17,8 @@ useEffect(() => {
     setDiscount(data.coupon.discount || 0);
     setSetupFeeWaived(!!data.coupon.setupFeeWaived);
   }
-}, []);
+}, [data]);
+
 
 
   if (!data) return <p>No purchase data found</p>;

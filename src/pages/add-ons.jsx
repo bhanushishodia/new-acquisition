@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 /* ===== FREE ADDONS (MAX 5) ===== */
@@ -14,143 +14,256 @@ const FREE_ADDONS = [
   { id: "cart", name: "Cart & Catalogue Support" },
   { id: "support", name: "Customer Support (Email, Chat & Call)" },
   { id: "flow", name: "Unlimited WhatsApp Flows" },
-  { id: "api", name: "APIs or Webhooks Access" },
+  { id: "api_access", name: "APIs or Webhooks Access" },
   { id: "multi", name: "Multi Templates Campaign" },
 ];
 
+const EXTRA_FREE_PRICE = 2000;
+const API_PRICE = 4000;
 /* ===== PAID FEATURES ===== */
 const PAID_FEATURES = [
-  { id: "meta", name: "META - Blue Tick Verification", oneTime: 3000 },
-  { id: "agent", name: "Additional Agent / Sub-login", monthly: 699, yearly: 5999 },
-  { id: "channel", name: "Add-on Channel (Unlimited Conversation)", monthly: 499, yearly: 1999 },
-  { id: "reports", name: "Multi Channel - Click & Engage Reports", monthly: 1499 },
-  { id: "lead", name: "Integrated Lead & Directory Management", monthly: 1500 },
-  { id: "dedicated", name: "Dedicated Person for Reporting & Analysis", monthly: 1500 },
-  { id: "fallback", name: "Multi-channel Fall Back Setup (SMS/RCS)", yearly: 5000 },
-  { id: "otp", name: "OTP System Setup", yearly: 4000 },
-  { id: "chatbot-adv", name: "Advanced Chatbot (Up to 500 nodes)", yearly: 6999 },
+  {
+    id: "meta",
+    name: "META - Blue Tick Verification",
+    oneTime: 3000,
+  },
+  {
+    id: "agent",
+    name: "Additional Agent / Sub-login (per agent)",
+    quarterly: 2100,
+    yearly: 6000,
+  },
+  {
+    id: "channel",
+    name: "Add-on Channel (Unlimited Conversation) (Per Channel)",
+    quarterly: 1500,
+    yearly: 2000,
+  },
+  {
+    id: "reports",
+    name: "Multi Channel - Click & Engage Reports",
+    quarterly: 2000,
+    yearly: 4500,
+  },
+  {
+    id: "lead",
+    name: "Integrated Lead Management System & Directory Management",
+    quarterly: 5000,
+    yearly: 15000,
+  },
+  {
+    id: "dedicated",
+    name: "Dedicated Person for Reporting & Analysis",
+    quarterly: 4500,
+    yearly: 15000,
+  },
+  {
+    id: "onprem",
+    name: "On-Premises Database Hosting",
+  },
+  {
+    id: "fallback",
+    name: "Multi-channel Fall Back Setup (SMS/RCS) (Per Channel)",
+    yearly: 5000,
+  },
+  {
+    id: "api_integration",
+    name: "API Integration",
+    note: "Based on scope of work",
+  },
+  {
+    id: "otp",
+    name: "OTP System Setup",
+    yearly: 10000,
+  },
+  {
+    id: "chatbot-adv",
+    name: "Advanced Chatbot (Up to 500 nodes)",
+    yearly: 6999,
+  },
 ];
 
 const AddOns = () => {
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
 
-  const [freeSelected, setFreeSelected] = useState([]);
-  const [paidSelected, setPaidSelected] = useState([]);
-  const [showFreeLimitMsg, setShowFreeLimitMsg] = useState(false);
-
   if (!data) return <p>Please select a plan first</p>;
 
-  // ✅ Move isNeoPro to component top level
-  const isNeoPro = data?.plan?.name === "Neo Pro";
+  const isNeoPro = data.plan?.name === "Neo Pro";
 
-  /* ===== FREE ADDONS (MAX 5 LOGIC) ===== */
-  const toggleFreeAddon = (addon) => {
-    const exists = freeSelected.find((a) => a.id === addon.id);
+  const [freeSelected, setFreeSelected] = useState([]);
+  const [paidSelected, setPaidSelected] = useState([]);
+  const [billingCycle, setBillingCycle] = useState("quarterly");
 
-    // Only enforce limit if NOT Neo Pro
-    if (!exists && !isNeoPro && freeSelected.length >= 5) {
-      setShowFreeLimitMsg(true);
-      return;
+  /* ===== AUTO SELECT ALL FOR NEO PRO ===== */
+  useEffect(() => {
+    if (isNeoPro) {
+      setFreeSelected(FREE_ADDONS);
     }
+  }, [isNeoPro]);
 
-    setShowFreeLimitMsg(false);
+  /* ===== FREE ADDON TOGGLE ===== */
+  const toggleFreeAddon = (addon) => {
+    if (isNeoPro) return;
 
-    setFreeSelected((prev) =>
-      exists ? prev.filter((a) => a.id !== addon.id) : [...prev, addon]
+    const exists = freeSelected.some(a => a.id === addon.id);
+
+    setFreeSelected(prev =>
+      exists ? prev.filter(a => a.id !== addon.id) : [...prev, addon]
     );
   };
 
-
-
-
-  /* ===== PAID FEATURES ===== */
+  /* ===== PAID ADDON TOGGLE ===== */
   const togglePaidAddon = (addon) => {
-    const exists = paidSelected.find((a) => a.id === addon.id);
-    setPaidSelected((prev) =>
-      exists ? prev.filter((a) => a.id !== addon.id) : [...prev, addon]
+    const exists = paidSelected.some(a => a.id === addon.id);
+    setPaidSelected(prev =>
+      exists ? prev.filter(a => a.id !== addon.id) : [...prev, addon]
     );
   };
 
-  const getPrice = (a) => a.monthly || a.yearly || a.oneTime || 0;
+  const getPrice = (a) => {
+    if (a.oneTime) return a.oneTime;
+    return billingCycle === "yearly" ? a.yearly || 0 : a.quarterly || 0;
+  };
 
   const paidTotal = useMemo(
     () => paidSelected.reduce((sum, a) => sum + getPrice(a), 0),
-    [paidSelected]
+    [paidSelected, billingCycle]
   );
 
+  /* ===== FREE ADDON COST LOGIC ===== */
+  const freeLimit = 5;
+  const nonApiFreeSelected = freeSelected.filter(
+    (a) => a.id !== "api_access"
+  );
 
-  const grandTotal = data.plan.price + paidTotal + data.setupFee;
+  const extraFreeCount = isNeoPro
+    ? 0
+    : Math.max(0, nonApiFreeSelected.length - freeLimit);
+
+  const extraFreeTotal = extraFreeCount * EXTRA_FREE_PRICE;
+
+
+
+  const apiSelected = freeSelected.some(a => a.id === "api_access");
+  const apiCharge = !isNeoPro && apiSelected ? API_PRICE : 0;
+
+  const addonsTotal = paidTotal + extraFreeTotal + apiCharge;
+  const grandTotal = data.plan.price + data.setupFee + addonsTotal;
 
   const proceed = () => {
-    const paidTotal = paidSelected.reduce(
-      (s, a) => s + (a.monthly || a.yearly || a.oneTime || 0),
-      0
-    );
-
     localStorage.setItem(
       "purchaseData",
       JSON.stringify({
         ...data,
-        addons: paidSelected.map(a => ({
-          id: a.id,
-          name: a.name,
-          price: a.monthly || a.yearly || a.oneTime || 0,
-        })),
-        addonsTotal: paidTotal,
         freeAddons: freeSelected,
+        paidAddons: paidSelected,
+        addonsTotal,
+        grandTotal,
       })
     );
-
-
     navigate("/coupon");
   };
 
 
   return (
     <div className="container pb-5">
-      <h2 className="mb-3">Customizable Add-Ons</h2>
+      <h4 className="mb-2">
+        {isNeoPro ? "Neo Pro Plan Active" : "Standard Plan Add-ons"}
+      </h4>
+      <p className="text-muted">
+        {isNeoPro
+          ? "Unlimited Free Add-ons enabled"
+          : `Selected ${freeSelected.length}/5 free add-ons`}
+      </p>
+
       <p className="text-muted mb-4">
         To make Anantya work perfectly for your business needs
+      </p>
+      <p className="text-muted">
+        {isNeoPro
+          ? "Neo Pro → Unlimited Free Add-ons Enabled"
+          : "Non-Neo Pro → 5 Free Add-ons, extra ₹2,000 each"}
       </p>
 
       {/* ================= FREE ADDONS ================= */}
       <div className="card p-4 mb-5 shadow-sm">
-        <h5 className="mb-3">Free Add-ons</h5>
-        {/* LIMIT MESSAGE */}
-        {showFreeLimitMsg && (
-          <div className="alert alert-warning py-2 mb-3">
-            <strong>⚠ Limit Reached:</strong> You can select up to <b>5 add-ons for free</b>.
-            Additional selections will be <b>chargeable</b>.
-          </div>
-        )}
-        <div className="row">
-          {FREE_ADDONS.map((a) => (
-            <div key={a.id} className="col-md-6 mb-2">
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  checked={freeSelected.some((s) => s.id === a.id)}
-                  onChange={() => toggleFreeAddon(a)}
-                />
-                <label className="form-check-label">{a.name}</label>
-              </div>
-            </div>
-          ))}
+        <div className={`alert ${isNeoPro ? "alert-success" : "alert-info"}`}>
+          {isNeoPro ? (
+            <strong>✅ Neo Pro Plan:</strong>
+          ) : (
+            <strong>ℹ Free Add-ons Policy:</strong>
+          )}
+          <span className="ms-2">
+            {isNeoPro
+              ? "Unlimited Free Add-ons Enabled"
+              : "First 5 add-ons free, then ₹2,000 per add-on. API Access ₹4,000"}
+          </span>
         </div>
 
-        <small className="text-muted">
-          Selected: {freeSelected.length}
-          {!isNeoPro ? " / 5" : ""} {/* Neo Pro shows unlimited */}
-        </small>
+        <h2 className="mb-3">Customizable Add-Ons</h2>
 
+        {/* ===== FREE ADDONS ===== */}
+        <div className="card p-4 shadow-sm mb-4">
+          <h5 className="mb-3">Free Add-ons</h5>
+
+
+          <div className="row">
+            {FREE_ADDONS.map(a => (
+              <div className="col-md-6 mb-2" key={a.id}>
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={freeSelected.some(s => s.id === a.id)}
+                    disabled={isNeoPro}
+                    onChange={() => toggleFreeAddon(a)}
+                  />
+                  <label className="form-check-label">{a.name}
+                    {a.id === "api_access" && (
+                      <span className="badge bg-warning ms-2">
+                        ₹4,000 (One-time)
+                      </span>
+                    )}
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <small className="text-muted">
+            Selected: {freeSelected.length}
+            {!isNeoPro && " / 5 free"}
+          </small>
+          {!isNeoPro && (
+            <small className="text-danger">
+              Extra Add-ons (excluding API): {extraFreeCount} × ₹2,000 = ₹{extraFreeTotal}
+
+
+              {apiSelected && <div>API Access: ₹4,000</div>}
+            </small>
+          )}
+        </div>
 
       </div>
 
       {/* ================= PAID FEATURES ================= */}
       <div className="card shadow-sm p-4 mb-4">
         <h5 className="mb-3">Paid Features & Integrations</h5>
+        <div className="mb-3">
+          <button
+            className={`btn btn-sm me-2 ${billingCycle === "quarterly" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("quarterly")}
+          >
+            Quarterly
+          </button>
+          <button
+            className={`btn btn-sm ${billingCycle === "yearly" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("yearly")}
+          >
+            Annually
+          </button>
+        </div>
 
         <div className="table-responsive">
           <table className="table align-middle">
@@ -159,8 +272,9 @@ const AddOns = () => {
                 <th>Select</th>
                 <th>Feature</th>
                 <th>One-Time (₹)</th>
-                <th>Monthly (₹)</th>
+                <th>Quarterly (₹)</th>
                 <th>Annually (₹)</th>
+
               </tr>
             </thead>
             <tbody>
@@ -173,10 +287,15 @@ const AddOns = () => {
                       onChange={() => togglePaidAddon(a)}
                     />
                   </td>
-                  <td>{a.name}</td>
+                  <td>{a.name}
+                    {a.note && <div className="text-muted small">{a.note}</div>}
+                  </td>
+
+
                   <td>{a.oneTime || "-"}</td>
-                  <td>{a.monthly || "-"}</td>
+                  <td>{a.quarterly || "-"}</td>
                   <td>{a.yearly || "-"}</td>
+
                 </tr>
               ))}
             </tbody>
@@ -184,12 +303,61 @@ const AddOns = () => {
         </div>
       </div>
 
+      {/* ================= CONVERSATION PRICING ================= */}
+      <div className="card p-4 shadow-sm my-4">
+        <h5 className="mb-3">WhatsApp Conversation Pricing</h5>
+
+        <div className="row g-3">
+          <div className="col-md-3">
+            <div className="border rounded p-3 h-100 text-center">
+              <h6 className="mb-1">Marketing</h6>
+              <h4 className="text-primary mb-0">₹0.95</h4>
+              <small className="text-muted">per conversation</small>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="border rounded p-3 h-100 text-center">
+              <h6 className="mb-1">Utility</h6>
+              <h4 className="text-success mb-0">₹0.15</h4>
+              <small className="text-muted">per conversation</small>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="border rounded p-3 h-100 text-center">
+              <h6 className="mb-1">Authentication</h6>
+              <h4 className="text-warning mb-0">₹0.15</h4>
+              <small className="text-muted">per conversation</small>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="border rounded p-3 h-100 text-center bg-light">
+              <h6 className="mb-1">Service</h6>
+              <h4 className="text-success mb-0">Free</h4>
+              <small className="text-muted">unlimited</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="alert alert-info mt-4 mb-0 small">
+          💡 <strong>Note:</strong> WhatsApp conversation charges are applied as per Meta's latest pricing
+          and may vary based on country and use-case category.
+        </div>
+      </div>
+
+
       {/* ================= SUMMARY ================= */}
       <div className="card p-4 shadow-sm mb-4">
         <h5>Price Summary</h5>
         <p>Base Plan: ₹{data.plan.price}</p>
         <p>Setup Fee: ₹{data.setupFee}</p>
         <p>Paid Add-ons: ₹{paidTotal}</p>
+        {extraFreeTotal > 0 && <p>Extra Free Add-ons: ₹{extraFreeTotal}</p>}
+        {apiCharge > 0 && <p>API/Webhook Access: ₹{apiCharge}</p>}
+
+
         <hr />
         <h5>Total Payable: ₹{grandTotal}</h5>
       </div>

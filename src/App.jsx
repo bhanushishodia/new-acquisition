@@ -3,6 +3,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 
 import WhatsAppPricing from "./pages/whatsapp-pricing";
+import LoginWithOTP from "./pages/login";
 import AddOns from "./pages/add-ons";
 import Coupon from "./pages/coupon";
 import GetStartedForm from "./pages/started-form";
@@ -16,7 +17,8 @@ import TermsAndConditions from "./pages/terms-conditions";
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<WhatsAppPricing />} />
+       <Route path="/" element={<LoginWithOTP />} />
+      <Route path="/pricing" element={<WhatsAppPricing />} />
       <Route path="/add-ons" element={<AddOns />} />
       <Route path="/coupon" element={<Coupon />} />
       <Route path="/get-started" element={<GetStartedForm />} />

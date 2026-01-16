@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import usePurchaseGuard from "../hooks/usePurchaseGuard";
 
 const OrderSummary = () => {
-    usePurchaseGuard();
+  usePurchaseGuard();
   const navigate = useNavigate();
   const data = JSON.parse(localStorage.getItem("purchaseData"));
 
@@ -16,7 +16,9 @@ const OrderSummary = () => {
   const setupFee = data.coupon?.setupFeeWaived ? 0 : data.setupFee;
   const discount = data.coupon?.discount || 0;
 
-  const total = basePrice + addonsTotal + setupFee - discount;
+  const setupFeeEffective = data.coupon?.setupFeeWaived ? 0 : data.setupFee;
+  const total = basePrice + (data.addonsTotal || 0) + setupFeeEffective - (data.coupon?.discount || 0);
+
   return (
     <div className="container pb-5">
       <h2>Order Summary</h2>
@@ -28,24 +30,26 @@ const OrderSummary = () => {
 
       <h5>Setup Fee</h5>
       <p>
-        ₹{data.setupFee}
+        ₹{data.coupon?.setupFeeWaived ? 0 : data.setupFee}
         {data.coupon?.setupFeeWaived && (
           <span className="text-success ms-2">(Waived)</span>
         )}
       </p>
 
+
       <h5>Paid Add-ons</h5>
-      {data.addons.length === 0 ? (
-        <p>None</p>
-      ) : (
+      {data.paidAddons && data.paidAddons.length > 0 ? (
         <ul>
-          {data.addons.map(a => (
+          {data.paidAddons.map(a => (
             <li key={a.id}>
-              {a.name} – ₹{a.price}
+              {a.name} – ₹{a.price} {/* price already calculated in AddOns */}
             </li>
           ))}
         </ul>
+      ) : (
+        <p>None</p>
       )}
+
 
       <h5>Discount</h5>
       <p>₹{discount}</p>

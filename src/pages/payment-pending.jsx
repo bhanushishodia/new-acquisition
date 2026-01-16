@@ -28,13 +28,11 @@ const PaymentPending = () => {
           Our accounts team is currently verifying the transaction.
         </p>
 
-        <div className="my-4">
-          <div className="spinner-border text-primary" role="status" />
-        </div>
+   
 
         <p className="small text-muted">
-          This usually takes a few minutes.  
-          Please do not refresh the page.
+          This usually takes a few hours.  
+        
         </p>
       </div>
     </div>

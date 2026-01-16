@@ -79,7 +79,7 @@ const Payment = () => {
                   total,
                 },
 
-                
+
               }
             );
             // if (verifyRes.data.success) {
@@ -132,27 +132,26 @@ const Payment = () => {
       return;
     }
 
-localStorage.setItem("qrPayment", JSON.stringify({
-  txnId,
-  amount: total,
-  purchaseData: data,
-  status: "PENDING",
-  method: "UPI"
-}));
+    localStorage.removeItem("paymentStatus"); // 🔴 IMPORTANT
 
-    
+    localStorage.setItem("qrPayment", JSON.stringify({
+      txnId,
+      amount: total,
+      purchaseData: data,
+      status: "PENDING",
+      method: "UPI"
+    }));
 
     navigate("/payment-pending");
-    setMessage("Payment details submitted successfully. Verification pending.");
-    setMessageType("warning");
-
   };
+
   const handleNeftSubmit = () => {
     if (!neftTxnId) {
       setMessage("Please enter NEFT / Reference Number");
       setMessageType("danger");
       return;
     }
+    localStorage.removeItem("paymentStatus"); // 🔴 IMPORTANT
 
 
     localStorage.setItem(
