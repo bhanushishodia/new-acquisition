@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import agreementPdf from "../assets/pdf/Anantya-Short-Agreement-2025.pdf";
 const TermsAndConditions = () => {
-  const navigate = useNavigate();
-  const [showAgreement, setShowAgreement] = useState(false);
+    const navigate = useNavigate();
+    const [showAgreement, setShowAgreement] = useState(false);
 
-  const data = JSON.parse(localStorage.getItem("purchaseData"));
-  const user = data?.user;
-const [agreed, setAgreed] = useState(false);
+    const data = JSON.parse(localStorage.getItem("purchaseData"));
+    const user = data?.user;
+    const [agreed, setAgreed] = useState(false);
 
 
     if (!user) {
@@ -69,35 +69,35 @@ const [agreed, setAgreed] = useState(false);
                     >
                         Back
                     </button>
-               <div className="form-check mt-3">
-<input
-  className="form-check-input"
-  type="checkbox"
-  id="agreeCheck"
-  checked={agreed}
-  onChange={(e) => setAgreed(e.target.checked)}
-/>
+                    <div className="form-check mt-3">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="agreeCheck"
+                            checked={agreed}
+                            onChange={(e) => setAgreed(e.target.checked)}
+                        />
 
-  <label className="form-check-label" htmlFor="agreeCheck">
-    I agree to the{" "}
-    <span
-      className="text-primary text-decoration-underline"
-      style={{ cursor: "pointer" }}
-      onClick={() => setShowAgreement(true)}
-    >
-      Terms & Conditions
-    </span>
-  </label>
-</div>
+                        <label className="form-check-label" htmlFor="agreeCheck">
+                            I agree to the{" "}
+                            <span
+                                className="text-primary text-decoration-underline"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => setShowAgreement(true)}
+                            >
+                                Terms & Conditions
+                            </span>
+                        </label>
+                    </div>
 
 
-                 <button
-  className="btn btn-primary mt-3"
-  disabled={!agreed}
-  onClick={() => navigate("/order-summary")}
->
-  Accept & Continue
-</button>
+                    <button
+                        className="btn btn-primary mt-3"
+                        disabled={!agreed}
+                        onClick={() => navigate("/order-summary")}
+                    >
+                        Accept & Continue
+                    </button>
 
                 </div>
                 {showAgreement && (
